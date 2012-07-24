@@ -68,7 +68,9 @@ APE.Core = new Class({
 		this.sessid = null;
 		this.pubid = null;
 
-		this.serverUri = (this.options.secure ? 'https' : 'http') + '://' + this.options.frequency + '.' + this.options.server + '/' + this.options.transport + '/?',
+		this.serverUri = (this.options.secure ? 'https' : 'http') + '://';
+		if (this.frequency>=0) this.serverUri+= this.options.frequency + '.';  //only add if it was set >=0, so by setting it to -1, it can be disabled
+		this.serverUri += this.options.server + '/' + this.options.transport + '/?',
 		this.timer = null;
 		this.status = 0; // 0 = APE is not initialized, 1 = connected, -1 = Disconnected by timeout, -2 = Disconnected by request failure
 		this.failCounter = 0;
