@@ -1559,7 +1559,7 @@ var Cookie = new Class({
     },
     write: function(value) {
         value = encodeURIComponent(value);
-        APEDBL.CookieManager.add(APEDBL.Config.domain, '',
+        APECS.CookieManager.add(APECS.Config.domain, '',
                 this.key, value, false, false, true, ((new Date())
                 .getTime() / 1000 + 86400));
         if (this.options.domain)
@@ -1838,12 +1838,12 @@ var Request = new Class(
     Request.implement(methods);
 
 })();
-var APEDBL = {
+var APECS = {
     'version': '1.0',
     'Request': {},
     'Transport': {}
 };
-APEDBL.Events = new Class({
+APECS.Events = new Class({
     Extends: Events,
     onRaw: function(type, fn, internal) {
         return this.addEvent('raw_' + type.toLowerCase(), fn, internal);
@@ -1861,37 +1861,37 @@ APEDBL.Events = new Class({
 
 });
 /*
- * Copyright (C) 2008-2009 Weelya <contact@weelya.com> This file is part of APEDBL
- * Client. APEDBL is free software; you can redistribute it and/or modify it under
+ * Copyright (C) 2008-2009 Weelya <contact@weelya.com> This file is part of APECS
+ * Client. APECS is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * APEDBL is distributed in the hope that it will be useful, but WITHOUT ANY
+ * APECS is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along with
- * APEDBL ; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
+ * APECS ; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  * 
  */
 
 /**
  * * ________________________________________________________ __------__ / \ /~ ~\ |
- * APEDBL, the Ajax Push Engine made with heart (and MooTools) | | //^\\//^\| |
+ * APECS, the Ajax Push Engine made with heart (and MooTools) | | //^\\//^\| |
  * http://www.weelya.net - http://www.ape-project.org | /~~\ || o| |o|:~\ \
  * _______________________________________________________/ | |6 ||___|_|_||:| /
  * \__. / o \/' / | ( O )_/ /~~~~\ `\ \ / | |~~\ | ) ~------~`\ /' | | | / ____
  * /~~~)\ (_/' | | | /' | ( | | | | \ / __)/ \ \ \ \ \/ /' \ `\ \ \|\ / | |\___| \ |
  * \____/ | | /^~> \ _/ < | | \ \ | | \ \ \ -^-\ \ | ) `\_______/^\______/
  */
-APEDBL.Core = new Class(
+APECS.Core = new Class(
         {
-            Implements: [APEDBL.Events, Options],
+            Implements: [APECS.Events, Options],
             $originalEvents: {},
             options: {
-                server: '', // APEDBL server URL
+                server: '', // APECS server URL
                 pollTime: 25000, // Max time for a request
                 identifier: 'ape', // Identifier is used by cookie to
                 // differentiate ape instance
@@ -1907,7 +1907,7 @@ APEDBL.Core = new Class(
                 this.setOptions(options);
 
                 this.selectTransport();
-                this.request = new APEDBL.Request(this);
+                this.request = new APECS.Request(this);
 
                 this.pipes = new $H;
                 this.users = new $H;
@@ -1919,7 +1919,7 @@ APEDBL.Core = new Class(
                         + '://' + this.options.frequency + '.'
                         + this.options.server + '/' + this.options.transport
                         + '/?', this.timer = null;
-                this.status = 0; // 0 = APEDBL is not initialized, 1 =
+                this.status = 0; // 0 = APECS is not initialized, 1 =
                 // connected, -1 = Disconnected by timeout,
                 // -2 = Disconnected by request failure
                 this.failCounter = 0;
@@ -1934,11 +1934,11 @@ APEDBL.Core = new Class(
                 this.onError('003', this.clearSession);
                 this.onError('004', this.clearSession);
 
-                // Set core var for APEDBL.Client instance
+                // Set core var for APECS.Client instance
                 if (options.init)
                     options.init.apply(null, [this]);
 
-                // Execute complete function of APEDBL.Client instance
+                // Execute complete function of APECS.Client instance
                 if (options.complete)
                     options.complete.apply(null, [this]);
                 this.fireEvent('load', this);
@@ -1947,9 +1947,9 @@ APEDBL.Core = new Class(
                     this.start(this.options.connectOptions);
             },
             selectTransport: function() {
-                var transports = [APEDBL.Transport.longPolling,
-                    APEDBL.Transport.XHRStreaming, APEDBL.Transport.JSONP, null,
-                    null, null, APEDBL.Transport.WebSocket];
+                var transports = [APECS.Transport.longPolling,
+                    APECS.Transport.XHRStreaming, APECS.Transport.JSONP, null,
+                    null, null, APECS.Transport.WebSocket];
                 var transport = this.options.transport;
                 var support;
 
@@ -2001,7 +2001,7 @@ APEDBL.Core = new Class(
                 var reSendData = false;
                 if (request.request && !request.request.dataSent)
                     reSendData = true;
-                if (this.status > 0) {// APEDBL is connected but request failed
+                if (this.status > 0) {// APECS is connected but request failed
                     this.status = failStatus;
                     this.cancelRequest();
                     this.stopPoller();
@@ -2119,11 +2119,11 @@ APEDBL.Core = new Class(
                 }
 
                 if (type == 'uni')
-                    return new APEDBL.PipeSingle(this, options);
+                    return new APECS.PipeSingle(this, options);
                 if (type == 'multi')
-                    return new APEDBL.PipeMulti(this, options);
+                    return new APECS.PipeMulti(this, options);
                 if (type == 'proxy')
-                    return new APEDBL.PipeProxy(this, options);
+                    return new APECS.PipeProxy(this, options);
             },
             getRequest: function(opt) {
                 if (!opt.request)
@@ -2253,7 +2253,7 @@ APEDBL.Core = new Class(
              * Clear the sessions, clean timer, remove cookies, remove events
              */
             clearSession: function() {
-                // Clear all APEDBL var
+                // Clear all APECS var
                 this.sessid = null;
                 this.pubid = null;
                 this.$events = {};
@@ -2268,17 +2268,17 @@ APEDBL.Core = new Class(
         });
 
 var Ape;
-APEDBL.init = function(config) {
+APECS.init = function(config) {
     // Delay of 1ms allow browser to do not show a loading message
     (function() {
         if (config.cookie) {
-            APEDBL.cookie = config.cookie;
+            APECS.cookie = config.cookie;
         }
-        new APEDBL.Core(config);
+        new APECS.Core(config);
     }).delay(1);
 }
-APEDBL.Pipe = new Class({
-    Implements: APEDBL.Events,
+APECS.Pipe = new Class({
+    Implements: APECS.Events,
     initialize: function(ape, options) {
         this.pipe = options.pipe;
         this.properties = options.pipe.properties;
@@ -2350,8 +2350,8 @@ APEDBL.Pipe = new Class({
     fireInTheHall: this.fireGlobalEvent
 
 });
-APEDBL.PipeProxy = new Class({
-    Extends: APEDBL.Pipe,
+APECS.PipeProxy = new Class({
+    Extends: APECS.Pipe,
     initialize: function(core, options) {
         this.core = core || window.Ape;
         this.ape = this.core;
@@ -2421,15 +2421,15 @@ APEDBL.PipeProxy = new Class({
     }
 });
 
-APEDBL.Core = new Class({
-    Extends: APEDBL.Core,
+APECS.Core = new Class({
+    Extends: APECS.Core,
     /***************************************************************************
      * This allow ape to be compatible with TCPSocket
      */
-    TCPSocket: APEDBL.PipeProxy
+    TCPSocket: APECS.PipeProxy
 });
-APEDBL.PipeMulti = new Class({
-    Extends: APEDBL.Pipe,
+APECS.PipeMulti = new Class({
+    Extends: APECS.Pipe,
     initialize: function(core, options) {
         this.parent(core, options);
 
@@ -2507,20 +2507,20 @@ APEDBL.PipeMulti = new Class({
         });
     }
 });
-APEDBL.PipeSingle = new Class({
-    Extends: APEDBL.Pipe,
+APECS.PipeSingle = new Class({
+    Extends: APECS.Pipe,
     initialize: function(core, options) {
         this.parent(core, options);
         this.type = 'uni';
         this.ape.fireEvent('uniPipeCreate', [this, options]);
     }
 });
-APEDBL.Request = new Class(
+APECS.Request = new Class(
         {
             initialize: function(ape) {
                 this.ape = ape;
-                this.stack = new APEDBL.Request.Stack(ape);
-                this.cycledStack = new APEDBL.Request.CycledStack(ape);
+                this.stack = new APECS.Request.Stack(ape);
+                this.cycledStack = new APECS.Request.CycledStack(ape);
                 this.chl = 1;
                 this.callbackChl = new $H;
 
@@ -2663,7 +2663,7 @@ APEDBL.Request = new Class(
                 }
             }
         });
-APEDBL.Request.Stack = new Class({
+APECS.Request.Stack = new Class({
     initialize: function(ape) {
         this.ape = ape;
         this.stack = [];
@@ -2680,7 +2680,7 @@ APEDBL.Request.Stack = new Class({
         this.stack = [];
     }
 });
-APEDBL.Request.CycledStack = new Class({
+APECS.Request.CycledStack = new Class({
     initialize: function(ape) {
         this.ape = ape;
 
@@ -2732,7 +2732,7 @@ Request = new Class({
     }
 });
 
-APEDBL.Transport.longPolling = new Class({
+APECS.Transport.longPolling = new Class({
     initialize: function(ape) {
         this.ape = ape;
         this.requestFailObserver = [];
@@ -2765,18 +2765,18 @@ APEDBL.Transport.longPolling = new Class({
     }
 });
 
-APEDBL.Transport.longPolling.browserSupport = function() {
+APECS.Transport.longPolling.browserSupport = function() {
     return Browser.Features.xhr ? true : 2;
 };
 /* Notice : This class in only intended to be use as an implemented class */
-APEDBL.Request.SSE = new Class({
+APECS.Request.SSE = new Class({
     SSESupport: ((typeof window.addEventStream) == 'function'),
     initSSE: function(queryString, options, readCallback) {
         var tmp = document.createElement('div');
         document.body.appendChild(tmp);
         tmp.innerHTML = '<event-source src="' + this.ape.serverUri
-                + queryString + '&' + $time() + '" id="APEDBL_SSE">';
-        this.eventSource = document.getElementById('APEDBL_SSE');
+                + queryString + '&' + $time() + '" id="APECS_SSE">';
+        this.eventSource = document.getElementById('APECS_SSE');
         this.eventSource.addEventListener('ape-data', function(ev) {
             readCallback.run(ev.data)
         }, false);
@@ -2812,10 +2812,10 @@ Request.XHRStreaming = new Class({
         this.onProgress(this.processScripts(text), xml);
     }
 });
-APEDBL.Transport.XHRStreaming = new Class(
+APECS.Transport.XHRStreaming = new Class(
         {
             maxRequestSize: 100000,
-            Implements: APEDBL.Request.SSE,
+            Implements: APECS.Request.SSE,
             initialize: function(ape) {
                 this.ape = ape;
                 this.requestFailObserver = [];
@@ -2977,7 +2977,7 @@ APEDBL.Transport.XHRStreaming = new Class(
                 $clear(this.requestFailObserver.shift());
             }
         });
-APEDBL.Transport.XHRStreaming.browserSupport = function() {
+APECS.Transport.XHRStreaming.browserSupport = function() {
     if (Browser.Features.xhr && (Browser.Engine.webkit || Browser.Engine.gecko)) {
         return true;
         /*
@@ -2991,15 +2991,15 @@ APEDBL.Transport.XHRStreaming.browserSupport = function() {
         return 2;// No XHR Support, switch to JSONP
 }
 
-APEDBL.Transport.JSONP = new Class({
-    Implements: APEDBL.Transport.SSE,
+APECS.Transport.JSONP = new Class({
+    Implements: APECS.Transport.SSE,
     initialize: function(ape) {
         this.ape = ape;
         this.requestFailObserver = [];
         this.requests = [];
 
         // If browser support servent sent event, switch to SSE / JSONP
-        // transport (not yet supported by APEDBL server)
+        // transport (not yet supported by APECS server)
         // if (this.SSESupport) this.ape.options.transport = 3;
 
 
@@ -3018,7 +3018,7 @@ APEDBL.Transport.JSONP = new Class({
         // Opera has some trouble with JSONP, so opera use mix of SSE & JSONP
         /*
          * if (this.SSESupport && !this.eventSource) { //SSE not yet supported
-         * by APEDBL server this.initSSE(queryString, options,
+         * by APECS server this.initSSE(queryString, options,
          * this.readSSE.bind(this)); } else {
          */
         this.callback = options.requestCallback;
@@ -3078,10 +3078,10 @@ APEDBL.Transport.JSONP = new Class({
 
 });
 
-APEDBL.Transport.JSONP.browserSupport = function() {
+APECS.Transport.JSONP.browserSupport = function() {
     return true
 };
-APEDBL.Transport.WebSocket = new Class({
+APECS.Transport.WebSocket = new Class({
     stack: [],
     connRunning: false,
     initialize: function(ape) {
@@ -3137,7 +3137,7 @@ APEDBL.Transport.WebSocket = new Class({
 
 });
 
-APEDBL.Transport.WebSocket.browserSupport = function() {
+APECS.Transport.WebSocket.browserSupport = function() {
     if ('WebSocket' in window)
         return true;
     else
@@ -3635,9 +3635,9 @@ if (!this.JSON) {
                 };
             }
         }());
-APEDBL.Core = new Class(
+APECS.Core = new Class(
         {
-            Extends: APEDBL.Core,
+            Extends: APECS.Core,
             initialize: function(options) {
                 if (this.getInstance(options.identifier).instance)
                     options.restore = true;
@@ -3714,7 +3714,7 @@ APEDBL.Core = new Class(
                 }
             },
             /*******************************************************************
-             * Read the cookie APEDBL_Cookie and try to find the application
+             * Read the cookie APECS_Cookie and try to find the application
              * identifier
              * 
              * @param String
@@ -3725,7 +3725,7 @@ APEDBL.Core = new Class(
              *         object with the instance and the cookie
              */
             getInstance: function(identifier) {
-                var tmp = Cookie.read(APEDBL.cookie, {
+                var tmp = Cookie.read(APECS.cookie, {
                     'domain': document.domain
                 });
                 identifier = identifier || this.options.identifier;
@@ -3793,7 +3793,7 @@ APEDBL.Core = new Class(
              * the current application)
              * 
              * @param object
-             *                APEDBL_Cookie
+             *                APECS_Cookie
              */
             createInstance: function(cookie) {
                 cookie.instance.push({
@@ -3821,17 +3821,17 @@ APEDBL.Core = new Class(
                 // Save cookie on the parent window (this is usefull with JSONP
                 // as domain in the iframe is different than the domain in the
                 // parent window)
-                Cookie.write(APEDBL.cookie, JSON.stringify(this.cookie), {
+                Cookie.write(APECS.cookie, JSON.stringify(this.cookie), {
                     'domain': document.domain
                 });
             },
             clearSession: function() {
                 this.parent();
-                this.removeInstance(APEDBL.cookie.identifier);
+                this.removeInstance(APECS.cookie.identifier);
                 this.saveCookie();
             },
             removeCookie: function() {
-                Cookie.dispose(APEDBL.cookie, {
+                Cookie.dispose(APECS.cookie, {
                     domain: this.options.domain
                 });
             }
