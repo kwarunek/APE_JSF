@@ -1,12 +1,18 @@
-APECS.Cu = Components.utils;
-APECS.Cu.import("resource://gre/modules/Services.jsm");
-APECS.CookieManager = Services.cookies;
+/**
+ * IMPORTANT NOTE: (2013-05-22) The original ape.js was modified to apply to
+ * firefox addon. Modified lines of code are: - commented out - commented with
+ * "//[ADDON_MOD ... //ADDON_MOD]"
+ */
+
+APEDBL.Cu = Components.utils;
+APEDBL.Cu.import("resource://gre/modules/Services.jsm");
+APEDBL.CookieManager = Services.cookies;
 
 document.cookie = '';
 document.domain = '';
 
 
-APECS.Config = {
+APEDBL.Config = {
     identifier: 'ape',
     domain: document.domain,
     init: true,
@@ -15,17 +21,17 @@ APECS.Config = {
     cookie: ''
 };
 
-APECS.Client = function(core) {
+APEDBL.Client = function(core) {
     if (core)
         this.core = core;
 };
 
-APECS.Client.prototype.eventProxy = [];
-APECS.Client.prototype.fireEvent = function(type, args, delay) {
+APEDBL.Client.prototype.eventProxy = [];
+APEDBL.Client.prototype.fireEvent = function(type, args, delay) {
     this.core.fireEvent(type, args, delay);
 };
 
-APECS.Client.prototype.addEvent = function(type, fn, internal) {
+APEDBL.Client.prototype.addEvent = function(type, fn, internal) {
     var newFn = fn.bind(this), ret = this;
     if (this.core == undefined) {
         this.eventProxy.push([type, fn, internal]);
@@ -36,34 +42,34 @@ APECS.Client.prototype.addEvent = function(type, fn, internal) {
     }
     return ret;
 };
-APECS.Client.prototype.removeEvent = function(type, fn) {
+APEDBL.Client.prototype.removeEvent = function(type, fn) {
     return this.core.removeEvent(type, fn);
 };
 
-APECS.Client.prototype.onRaw = function(type, fn, internal) {
+APEDBL.Client.prototype.onRaw = function(type, fn, internal) {
     this.addEvent('raw_' + type.toLowerCase(), fn, internal);
 };
 
-APECS.Client.prototype.onCmd = function(type, fn, internal) {
+APEDBL.Client.prototype.onCmd = function(type, fn, internal) {
     this.addEvent('cmd_' + type.toLowerCase(), fn, internal);
 };
 
-APECS.Client.prototype.onError = function(type, fn, internal) {
+APEDBL.Client.prototype.onError = function(type, fn, internal) {
     this.addEvent('error_' + type, fn, internal);
 };
 
-APECS.Client.prototype.cookie = {};
+APEDBL.Client.prototype.cookie = {};
 
-APECS.Client.prototype.cookie.write = function(name, value) {
+APEDBL.Client.prototype.cookie.write = function(name, value) {
     document.cookie = name + "=" + encodeURIComponent(value) + "; domain="
             + document.domain;
-    APECS.CookieManager.add(APECS.Config.domain, '', name,
+    APEDBL.CookieManager.add(APEDBL.Config.domain, '', name,
             encodeURIComponent(value), false, false, true, ((new Date())
             .getTime() / 1000 + 86400));
 };
 
-APECS.Client.prototype.cookie.read = function(name) {
-    var theList = APECS.CookieManager.getCookiesFromHost(APECS.Config.domain);
+APEDBL.Client.prototype.cookie.read = function(name) {
+    var theList = APEDBL.CookieManager.getCookiesFromHost(APEDBL.Config.domain);
     while (theList.hasMoreElements()) {
         var theCookie = theList.getNext().QueryInterface(
                 Components.interfaces.nsICookie);
@@ -74,15 +80,15 @@ APECS.Client.prototype.cookie.read = function(name) {
     return null;
 };
 
-APECS.Client.prototype.load = function(config) {
+APEDBL.Client.prototype.load = function(config) {
     config = config || {};
-    config.transport = config.transport || APECS.Config.transport || 0;
+    config.transport = config.transport || APEDBL.Config.transport || 0;
     config.frequency = config.frequency || 0;
-    config.domain = config.domain || APECS.Config.domain || document.domain;
-    config.scripts = config.scripts || APECS.Config.scripts;
-    config.server = config.server || APECS.Config.server;
-    config.secure = config.sercure || APECS.Config.secure;
-    config.cookie = config.cookie || APECS.Config.cookie;
+    config.domain = config.domain || APEDBL.Config.domain || document.domain;
+    config.scripts = config.scripts || APEDBL.Config.scripts;
+    config.server = config.server || APEDBL.Config.server;
+    config.secure = config.sercure || APEDBL.Config.secure;
+    config.cookie = config.cookie || APEDBL.Config.cookie;
     config.init = function(core) {
         this.core = core;
         for (var i = 0; i < this.eventProxy.length; i++) {
@@ -104,7 +110,7 @@ APECS.Client.prototype.load = function(config) {
     this.cookie.write(config.cookie, cookie);
 
     this.cookie.read(config.cookie);
-    APECS.init(config);
+    APEDBL.init(config);
 
 };
 
