@@ -1,8 +1,12 @@
-=APE_JSF - frequency, cookie manager
+APE_JSF - JS client for APE Server
 
-Cookie Manger release using  @mozilla api components
+CMBuild - ready as a FF extension
+- encapsulation
+- cookie manager
+- updated mootool 1.2.6
+- APEExtReady object
 
-
+--
 
 http://www.ape-project.org
 
