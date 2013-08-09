@@ -1035,7 +1035,7 @@ var Event = new Native({
 				if (fKey > 0 && fKey < 13) key = 'f' + fKey;
 			}
 			key = key || String.fromCharCode(code).toLowerCase();
-		} else if (type.match(/(click|mouse|menu)/i)){
+		} else if (type.match(/(click|menu)/i)){
 			doc = (!doc.compatMode || doc.compatMode == 'CSS1Compat') ? doc.html : doc.body;
 			var page = {
 				x: event.pageX || event.clientX + doc.scrollLeft,
@@ -1045,16 +1045,9 @@ var Event = new Native({
 				x: (event.pageX) ? event.pageX - win.pageXOffset : event.clientX,
 				y: (event.pageY) ? event.pageY - win.pageYOffset : event.clientY
 			};
-			if (type.match(/DOMMouseScroll|mousewheel/)){
-				var wheel = (event.wheelDelta) ? event.wheelDelta / 120 : -(event.detail || 0) / 3;
-			}
 			var rightClick = (event.which == 3) || (event.button == 2);
 			var related = null;
 			if (type.match(/over|out/)){
-				switch (type){
-					case 'mouseover': related = event.relatedTarget || event.fromElement; break;
-					case 'mouseout': related = event.relatedTarget || event.toElement;
-				}
 				if (!(function(){
 					while (related && related.nodeType == 3) related = related.parentNode;
 					return true;
@@ -2076,14 +2069,17 @@ Element.Properties.tag = {
 };
 
 Element.Properties.html = (function(){
-	var BUGGY_INNERHTML = true;
-	try {
-		var tester = document.createElement('tr');
-		tester.innerHTML = '<td>x';
-		tester = tester.firstChild;
-		BUGGY_INNERHTML = !(tester.nodeName == 'TD' && tester.innerHTML == 'x');
-	}
-	catch (e){}
+	var BUGGY_INNERHTML = false;
+	// hack/fix to make work with Onet addon: disable tester code.
+	// var BUGGY_INNERHTML = true;
+	// try {
+	// var tester = document.createElement('tr');
+	// tester.innerHTML = '<td>x';
+	// tester = tester.firstChild;
+	// BUGGY_INNERHTML = !(tester.nodeName == 'TD' && tester.innerHTML ==
+	// 'x');
+	// }
+	// catch (e){}
 	if (!BUGGY_INNERHTML) return {
 		set: function(){
 			this.innerHTML = Array.flatten(arguments).join('');
@@ -2256,10 +2252,6 @@ try {
 } catch(e){}
 
 Element.NativeEvents = {
-	click: 2, dblclick: 2, mouseup: 2, mousedown: 2, contextmenu: 2, //mouse buttons
-	mousewheel: 2, DOMMouseScroll: 2, //mouse wheel
-	mouseover: 2, mouseout: 2, mousemove: 2, selectstart: 2, selectend: 2, //mouse movement
-	keydown: 2, keypress: 2, keyup: 2, //keyboard
 	focus: 2, blur: 2, change: 2, reset: 2, select: 2, submit: 2, //form elements
 	load: 1, unload: 1, beforeunload: 2, resize: 1, move: 1, DOMContentLoaded: 1, readystatechange: 1, //window
 	error: 1, abort: 1, scroll: 1 //misc
@@ -2275,20 +2267,6 @@ var $check = function(event){
 };
 
 Element.Events = new Hash({
-
-	mouseenter: {
-		base: 'mouseover',
-		condition: $check
-	},
-
-	mouseleave: {
-		base: 'mouseout',
-		condition: $check
-	},
-
-	mousewheel: {
-		base: (Browser.Engine.gecko) ? 'DOMMouseScroll' : 'mousewheel'
-	}
 
 });
 
@@ -3134,64 +3112,6 @@ Element.Events.domready = {
 
 })();
 
-
-/*
----
-
-name: JSON
-
-description: JSON encoder and decoder.
-
-license: MIT-style license.
-
-see: <http://www.json.org/>
-
-requires: [Array, String, Number, Function, Hash]
-
-provides: JSON
-
-...
-*/
-
-var JSON = new Hash(this.JSON && {
-	stringify: JSON.stringify,
-	parse: JSON.parse
-}).extend({
-	
-	$specialChars: {'\b': '\\b', '\t': '\\t', '\n': '\\n', '\f': '\\f', '\r': '\\r', '"' : '\\"', '\\': '\\\\'},
-
-	$replaceChars: function(chr){
-		return JSON.$specialChars[chr] || '\\u00' + Math.floor(chr.charCodeAt() / 16).toString(16) + (chr.charCodeAt() % 16).toString(16);
-	},
-
-	encode: function(obj){
-		switch ($type(obj)){
-			case 'string':
-				return '"' + obj.replace(/[\x00-\x1f\\"]/g, JSON.$replaceChars) + '"';
-			case 'array':
-				return '[' + String(obj.map(JSON.encode).clean()) + ']';
-			case 'object': case 'hash':
-				var string = [];
-				Hash.each(obj, function(value, key){
-					var json = JSON.encode(value);
-					if (json) string.push(JSON.encode(key) + ':' + json);
-				});
-				return '{' + string + '}';
-			case 'number': case 'boolean': return String(obj);
-			case false: return 'null';
-		}
-		return null;
-	},
-
-	decode: function(string, secure){
-		if ($type(string) != 'string' || !string.length) return null;
-		if (secure && !(/^[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]*$/).test(string.replace(/\\./g, '@').replace(/"[^"\\\n\r]*"/g, ''))) return null;
-		return eval('(' + string + ')');
-	}
-
-});
-
-
 /*
 ---
 
@@ -3265,114 +3185,6 @@ Cookie.dispose = function(key, options){
 	return new Cookie(key, options).dispose();
 };
 
-
-/*
----
-
-name: Swiff
-
-description: Wrapper for embedding SWF movies. Supports External Interface Communication.
-
-license: MIT-style license.
-
-credits: Flash detection & Internet Explorer + Flash Player 9 fix inspired by SWFObject.
-
-requires: [Options, $util]
-
-provides: Swiff
-
-...
-*/
-
-var Swiff = new Class({
-
-	Implements: [Options],
-
-	options: {
-		id: null,
-		height: 1,
-		width: 1,
-		container: null,
-		properties: {},
-		params: {
-			quality: 'high',
-			allowScriptAccess: 'always',
-			wMode: 'transparent',
-			swLiveConnect: true
-		},
-		callBacks: {},
-		vars: {}
-	},
-
-	toElement: function(){
-		return this.object;
-	},
-
-	initialize: function(path, options){
-		this.instance = 'Swiff_' + $time();
-
-		this.setOptions(options);
-		options = this.options;
-		var id = this.id = options.id || this.instance;
-		var container = document.id(options.container);
-
-		Swiff.CallBacks[this.instance] = {};
-
-		var params = options.params, vars = options.vars, callBacks = options.callBacks;
-		var properties = $extend({height: options.height, width: options.width}, options.properties);
-
-		var self = this;
-
-		for (var callBack in callBacks){
-			Swiff.CallBacks[this.instance][callBack] = (function(option){
-				return function(){
-					return option.apply(self.object, arguments);
-				};
-			})(callBacks[callBack]);
-			vars[callBack] = 'Swiff.CallBacks.' + this.instance + '.' + callBack;
-		}
-
-		params.flashVars = Hash.toQueryString(vars);
-		if (Browser.Engine.trident){
-			properties.classid = 'clsid:D27CDB6E-AE6D-11cf-96B8-444553540000';
-			params.movie = path;
-		} else {
-			properties.type = 'application/x-shockwave-flash';
-			properties.data = path;
-		}
-		var build = '<object id="' + id + '"';
-		for (var property in properties) build += ' ' + property + '="' + properties[property] + '"';
-		build += '>';
-		for (var param in params){
-			if (params[param]) build += '<param name="' + param + '" value="' + params[param] + '" />';
-		}
-		build += '</object>';
-		this.object = ((container) ? container.empty() : new Element('div')).set('html', build).firstChild;
-	},
-
-	replaces: function(element){
-		element = document.id(element, true);
-		element.parentNode.replaceChild(this.toElement(), element);
-		return this;
-	},
-
-	inject: function(element){
-		document.id(element, true).appendChild(this.toElement());
-		return this;
-	},
-
-	remote: function(){
-		return Swiff.remote.apply(Swiff, [this.toElement()].extend(arguments));
-	}
-
-});
-
-Swiff.CallBacks = {};
-
-Swiff.remote = function(obj, fn){
-	var rs = obj.CallFunction('<invoke name="' + fn + '" returntype="javascript">' + __flash__argumentsToXML(arguments, 2) + '</invoke>');
-	return eval(rs);
-};
 
 
 /*
@@ -6003,7 +5815,7 @@ Request.JSON = new Class({
             }
         }.bind(this);
         var cookie = this.cookie.read(config.cookie);
-        var tmp = eval('(' + cookie + ')');
+        var tmp = JSON.parse(cookie);
         if (tmp) {
             config.frequency = tmp.frequency + 1;
 
@@ -6021,14 +5833,6 @@ Request.JSON = new Class({
 
     };
 
-    if (Function.prototype.bind == null) {
-        Function.prototype.bind = function(bind, args) {
-            return this.create({
-                'bind': bind,
-                'arguments': args
-            });
-        };
-    }
     if (Function.prototype.create == null) {
         Function.prototype.create = function(options) {
             var self = this;
